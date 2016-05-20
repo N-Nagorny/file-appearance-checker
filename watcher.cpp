@@ -15,14 +15,14 @@ Watcher::Watcher(QDialog *parent, QString path): QWidget(parent) {
     QObject::connect(watcher, SIGNAL(directoryChanged(const QString&)), this, SLOT(checkChanges(const QString&)));
 }
 
-void Watcher::setTrayIconActions() {
+void Watcher::setTrayIconActions() { // Initializing context menu of tray icon
     minimizeAction = new QAction("Minimize", this);
     restoreAction = new QAction("Restore", this);
     quitAction = new QAction("Quit", this);
 
-    connect (minimizeAction, SIGNAL(triggered()), parentPointer, SLOT(hide()));
-    connect (restoreAction, SIGNAL(triggered()), parentPointer, SLOT(showNormal()));
-    connect (quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    QObject::connect (minimizeAction, SIGNAL(triggered()), parentPointer, SLOT(hide()));
+    QObject::connect (restoreAction, SIGNAL(triggered()), parentPointer, SLOT(showNormal()));
+    QObject::connect (quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     trayIconMenu = new QMenu(this);
     trayIconMenu->addAction (minimizeAction);
@@ -30,52 +30,58 @@ void Watcher::setTrayIconActions() {
     trayIconMenu->addAction (quitAction);
 }
 
-void Watcher::showTrayIcon() {
+void Watcher::showTrayIcon() { // Creating system tray item icon
     trayIcon = new QSystemTrayIcon(this);
     QIcon trayImage(":/images/abc.png");
-    trayIcon -> setIcon(trayImage);
-    trayIcon -> setContextMenu(trayIconMenu);
-    trayIcon -> show();
+    trayIcon->setIcon(trayImage);
+    trayIcon->setContextMenu(trayIconMenu);
+    trayIcon->show();
 }
 
-void Watcher::changeEvent(QEvent *event)
+void Watcher::changeEvent(QEvent *event) // QWidget changeEvent overriding for minimizing app to tray instead dashboard
 {
     QWidget::changeEvent(event);
-    if (event -> type() == QEvent::WindowStateChange)
+    if (event->type() == QEvent::WindowStateChange)
     {
         if (isMinimized())
         {
-            this -> hide();
+            this->hide();
         }
     }
 }
 
-void Watcher::checkChanges(const QString& dirPath) {
+void Watcher::checkChanges(const QString& path) { // Getting name of appeared file
     delete dir;
     dir = new QDir(path);
     listOfFiles = dir->entryInfoList();
+
     qDebug() << "Изменения в каталоге";
     qDebug() << listOfFiles.length() << oldLength << "\n";
     if (listOfFiles.length() > oldLength) {
         QFileInfoList::iterator i;
         QFileInfoList::iterator j;
-        QFileInfoList::iterator k;
-        for (i = listOfFiles.begin(); i != listOfFiles.end(); ++i)
-            for (j = oldListOfFiles.begin(); j != oldListOfFiles.end(); ++j)
-                if (i->fileName() == j->fileName()) {
+        for (j = oldListOfFiles.begin(); j != oldListOfFiles.end(); ++j)
+        {
+            for (i = listOfFiles.begin(); i != listOfFiles.end(); ++i)
+            {
+                if (i->fileName().compare(j->fileName()) == 0)
+                {
                     listOfFiles.erase(i);
-                    for (k = listOfFiles.begin(); k != listOfFiles.end(); ++k)
-                        qDebug() << k->fileName();
+                    break;
                 }
-        setLabel(dirPath);
+            }
+        }
+        qDebug() << listOfFiles.first().fileName();
+        dialog = new Dialog(listOfFiles.first(), this);
+        dialog->show();
+        setLabel(listOfFiles.first().fileName()); // Showing bubble notification in tray
     }
     oldListOfFiles = dir->entryInfoList();
-    oldLength = listOfFiles.length();
+    oldLength = oldListOfFiles.length();
 }
 
 void Watcher::setLabel(const QString& str) {
     trayIcon->showMessage("Содержимое папки изменено", str);
-    //QMessageBox::information(this, "MainForm", str);
 }
 
 Watcher::~Watcher() {

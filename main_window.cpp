@@ -1,6 +1,6 @@
 #include "main_window.h"
 
-MainWindow::MainWindow(QWidget *parent): QDialog(parent) {
+MainWindow::MainWindow(QWidget *parent): QDialog(parent) { //Main window initialization
 
     path = "";
     settings = new QSettings("N-Nagorny", "FAC");
@@ -10,11 +10,11 @@ MainWindow::MainWindow(QWidget *parent): QDialog(parent) {
     lay3 = new QHBoxLayout();
 
     ed = new QLineEdit();
-    ed->setReadOnly(true); // Желательно избавиться
+    ed->setReadOnly(true);
     chooseBtn = new QPushButton("Обзор…");
     exitBtn = new QPushButton("Выход");
 
-    loadSettings();
+    loadSettings(); // Loading tracked path from "./config"
     watcherInst = new Watcher(this, path);
 
     this->setLayout(lay1);
@@ -29,18 +29,18 @@ MainWindow::MainWindow(QWidget *parent): QDialog(parent) {
     this->setMaximumSize(500, 150);
     this->setWindowTitle("FAC");
 
-    QObject::connect(chooseBtn, SIGNAL(clicked()), this, SLOT(changeSettings()));
-    QObject::connect(exitBtn, SIGNAL(clicked()), this, SLOT(close()));
+    QObject::connect(chooseBtn, SIGNAL(clicked()), this, SLOT(changeSettings())); //"Обзор..." button
+    QObject::connect(exitBtn, SIGNAL(clicked()), this, SLOT(close()));            //"Выход" button
 }
 
-void MainWindow::callFileDialog() {
+void MainWindow::callFileDialog() { // Calling change directory dialog
     QString result;
     result = QFileDialog::getExistingDirectory(this, "Выберите папку для отслеживания", path);
     if (result.length())
         path = result;
 }
 
-void MainWindow::saveSettings() {
+void MainWindow::saveSettings() { // Saving tracked path in "./config" and reloading Watcher instance
     ed->setText(path);
     delete watcherInst;
     watcherInst = new Watcher(this, path);
@@ -54,8 +54,9 @@ void MainWindow::changeSettings() {
     saveSettings();
 }
 
-void MainWindow::loadSettings() {
+void MainWindow::loadSettings() { // Loading tracked path from "./config"
     path = settings->value("Path").toString();
+    qDebug() << path;
     if (path.length() == 0) {
         changeSettings();
     }

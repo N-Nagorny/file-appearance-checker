@@ -12,6 +12,8 @@
 #include <QDir>
 #include <QDebug>
 
+#include "dialog.h"
+
 class Watcher: public QWidget {
     Q_OBJECT
 private:
@@ -30,11 +32,13 @@ private:
     QFileInfoList listOfFiles;
     QFileInfoList oldListOfFiles;
     int oldLength;
+
+    Dialog *dialog;
 public:
     Watcher(QDialog *parent = 0, QString path = "");
     ~Watcher();
 private slots:
-    void checkChanges(const QString& dirPath);
+    void checkChanges(const QString& path);
 private:
     void setTrayIconActions();
     void showTrayIcon();
