@@ -42,7 +42,8 @@ void MainWindow::callFileDialog() { // Calling change directory dialog
 
 void MainWindow::saveSettings() { // Saving tracked path in "./config" and reloading Watcher instance
     ed->setText(path);
-    delete watcherInst;
+    if (watcherInst != nullptr)
+        delete watcherInst;
     watcherInst = new Watcher(this, path);
     settings->setValue("Path", path);
     settings->sync();

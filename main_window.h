@@ -16,7 +16,7 @@ class MainWindow: public QDialog {
 private:
     QString path;
     QSettings *settings;
-    Watcher *watcherInst;
+    Watcher *watcherInst = nullptr;
 
     QVBoxLayout *lay1;
     QHBoxLayout *lay2;
